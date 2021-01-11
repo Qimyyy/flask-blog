@@ -1,5 +1,6 @@
 # для настройки баз данных
 import json
+import os
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date
 
@@ -27,5 +28,8 @@ class Post(Base):
     date = Column(Date, default=datetime.utcnow)
 
 
-engine = create_engine('sqlite:///database.db')
+basedir = os.path.abspath(os.path.dirname(__file__))
+path_db = 'sqlite:///' + os.path.join(basedir, 'database.db?check_same_thread=False')
+
+engine = create_engine(path_db)
 Base.metadata.create_all(engine)

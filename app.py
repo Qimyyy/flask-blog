@@ -1,4 +1,5 @@
 import json
+import os
 import sqlite3
 from flask import Flask, render_template, url_for, request, flash, redirect, jsonify
 from werkzeug.exceptions import abort
@@ -11,8 +12,12 @@ from init_db import Post
 
 app = Flask(__name__, static_folder='static')
 app.config['SECRET_KEY'] = 'my_secret_key'
+app.config['JSON_AS_ASCII'] = False
 
-engine = create_engine("sqlite:///database.db")
+basedir = os.path.abspath(os.path.dirname(__file__))
+path_db = 'sqlite:///' + os.path.join(basedir, 'database.db?check_same_thread=False')
+engine = create_engine(path_db)
+
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
@@ -20,11 +25,7 @@ session = DBSession()
 @app.route('/')
 @app.route('/index')
 def index():
-    post1 = Post(title="Первый пост", text="Это первый пост на сайте")
-    session.add(post1)
-
     posts = session.query(Post).all()
-    session.commit()
     return render_template('index.html', posts=posts)
 
 
@@ -40,7 +41,6 @@ def api_index():
             "title": post.title,
             "date": post.date
         })
-    session.commit()
     return jsonify(json_posts)
 
 
@@ -53,7 +53,6 @@ def api_post(post_id):
         "title": post.title,
         "date": post.date
     })
-    session.commit()
 
 
 @app.route('/posts/<int:post_id>')
